@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Survey</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2rem;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+        .emoji {
+            font-size: 100px;
+            cursor: pointer;
+            padding: 10px;
+            border: none;
+            background: none;
+            transition: transform 0.3s ease;
+        }
+        .emoji:hover {
+            transform: scale(1.2);
+        }
+        p {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            color: #000;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: none;
+            font-size: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5rem; }
+            .emoji { font-size: 80px; }
+        }
+        @media (max-width: 480px) {
+            h1 { font-size: 1.3rem; }
+            .emoji { font-size: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <h1>How was your food today?</h1>
+        <div class="container">
+            <button class="emoji" onclick="handleVote('Very bad');">😡</button>
+            <button class="emoji" onclick="handleVote('Bad');">😕</button>
+            <button class="emoji" onclick="handleVote('Neutral');">😐</button>
+            <button class="emoji" onclick="handleVote('Good');">🙂</button>
+            <button class="emoji" onclick="handleVote('Excellent');">😄</button>
+        </div>
+        <p class="message">Please respond only once.</p>
+    </div>
+
+    <div id="popup">Thank you for your vote!</div>
+
+    <script>
+        var ENDPOINT = 'https://script.google.com/macros/s/AKfycbw0m6Kd_8o6zpacKGmXqsrrs-U2-7zPmTS4yv4uqKw0mloYlcUVvvVBBey-CJ4Zl23XHw/exec';
+
+        function handleVote(vote) {
+            toggleContent(false);
+            showPopup();
+            sendVote(vote);
+        }
+
+        function pad(n) { return ('0' + n).slice(-2); }
+
+        async function sendVote(vote) {
+            var now = new Date();
+            var date = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) +
+                       ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+
+            var formData = new URLSearchParams();
+            formData.append('date', date);
+            formData.append('vote', vote);
+
+            try {
+                // no-cors: el voto se envia aunque no podamos leer la respuesta
+                await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', body: formData });
+            } catch (error) {
+                // Sin alert(): en un kiosco bloquearia la pantalla
+                console.error('Error:', error);
+            }
+        }
+
+        function showPopup() {
+            var popup = document.getElementById('popup');
+            popup.style.display = 'block';
+            setTimeout(function () {
+                popup.style.display = 'none';
+                toggleContent(true);
+            }, 3000);
+        }
+
+        function toggleContent(show) {
+            document.getElementById('content').style.display = show ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
